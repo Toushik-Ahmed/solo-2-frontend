@@ -1,9 +1,9 @@
-import SignupLogin from '@/components/signup/SignupLogin';
+import Dashboard from '@/components/dashboard/Dashboard';
 
 function page() {
   return (
     <div>
-      <SignupLogin />
+      <Dashboard />
     </div>
   );
 }
