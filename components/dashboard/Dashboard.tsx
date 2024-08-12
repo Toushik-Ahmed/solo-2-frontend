@@ -1,11 +1,15 @@
 'use client';
+import { Button } from '@/components/ui/button';
 import { getCurrentUser } from '@/services/authServices';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { CiBookmark, CiBookmarkCheck } from 'react-icons/ci';
+import { FaLongArrowAltLeft } from 'react-icons/fa';
 import { LuArrowDownUp } from 'react-icons/lu';
-import { MdOutlineEventNote } from 'react-icons/md';
+import { MdDeleteForever, MdOutlineEventNote } from 'react-icons/md';
+import { Edit } from '../propeseSession/Edit';
+import { ProposeButton } from '../propeseSession/ProposeButton';
 import { User } from '../signup/SignUpTab';
 import DashBoardCard from './DashBoardCard';
 import Filter from './Filter';
@@ -14,6 +18,7 @@ import ProposeSession from './ProposeSession';
 function Dashboard() {
   const currentPath = usePathname();
   const [currentUser, setCurrentUser] = useState<User>();
+  const [proposeButton, setProposeButton] = useState(false);
 
   useEffect(() => {
     const currentUserFn = async () => {
@@ -54,25 +59,70 @@ function Dashboard() {
           </li>
         </ul>
       </nav>
-      <div className="m-8 flex flex-col space-y-6 ">
-        <div className="text-white text-2xl font-semibold ">
-          Welcome {currentUser?.firstName}
-          <p className="text-sm font-extralight">
-            {' '}
-            a brief summary before you book your next session
-          </p>
+
+      {!proposeButton ? (
+        <div>
+          <div className="m-8 flex flex-col space-y-6 ">
+            <div className="text-white text-2xl font-semibold ">
+              Welcome {currentUser?.firstName}
+              <p className="text-sm font-extralight">
+                {' '}
+                a brief summary before you book your next session
+              </p>
+            </div>
+            <DashBoardCard />
+          </div>
+
+          <div className="flex m-8 bg-[#1a1c1f]  border-t-2 border-solid border-[#3f4146]  text-white">
+            <div className="w-[25%] border-r-2 border-[#3f4146]  pr-2">
+              <div className="p-2">
+                <Filter />
+              </div>
+            </div>
+
+            <div className="w-[100%] flex flex-col gap-4 ">
+              <ProposeSession setProposeButton={setProposeButton} />
+              <div className="p-2 flex justify-between border-b-2 border-[#3f4146]">
+                <p>Book Session</p>
+                <p>0 Available sessions</p>
+              </div>
+            </div>
+          </div>
         </div>
-        <DashBoardCard />
-      </div>
-      {/* <hr className='bg-[#3f4146]'/> */}
-      <div className="grid grid-cols-2 m-8 bg-[#1a1c1f] gap-x-20 border-t-2 border-solid border-[#3f4146] p-4  text-white">
-        <div className='w-[25%]'>
-          <Filter />
+      ) : (
+        <div>
+          <div className="text-white m-20 flex flex-col gap-y-20">
+            <Link
+              onClick={() => setProposeButton(false)}
+              className="flex items-center border-b-2 border-solid border-[#3f4146] pb-4"
+              href="/interviewdashboard/dashboard"
+            >
+              <FaLongArrowAltLeft className="mr-2 text-green-400" /> Back to
+              book sessions
+            </Link>
+          </div>
+
+          <div className="w-full flex justify-center">
+            <div className="text-center  flex flex-col gap-8 w-[50%] ">
+              <ProposeButton />
+              <div className="text-white flex justify-between">
+                <p>Availabilities (2)</p>
+                <p>Asia/Dhaka</p>
+              </div>
+              <div className="text-white bg-[#292b2e] rounded-lg flex justify-between p-4 items-center">
+                08:00-09:30 ,August 12, 2024
+                <div className="w-fit  flex  items-center">
+                  <Edit />
+                  <Button className="bg-[[#3f4146]] text-lg" variant="default">
+                    {' '}
+                    <MdDeleteForever className="w-8 h-5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className='w-[full]'>
-          <ProposeSession />
-        </div>
-      </div>
+      )}
     </div>
   );
 }
