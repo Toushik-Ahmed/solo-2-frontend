@@ -30,22 +30,38 @@ export function ProposeButton() {
     };
   });
 
-  const [additionalSlots, setAdditionalSlots] = useState<number[]>([]);
+  const times: string[] = [];
+  for (let i = 0; i <= 30 * 22.5 * 2; i += 30) {
+    times.push(moment().startOf('day').add(i, 'minute').format('HH:mm'));
+  }
+
+  const [slots, setSlots] = useState<
+    { date?: Date; startTime?: string; endTime?: string }[]
+  >([{}]);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTimezone, setSelectedTimezone] = useState();
+  const [selectedTimezone, setSelectedTimezone] = useState('');
 
   const addSlot = () => {
-    setAdditionalSlots([...additionalSlots, additionalSlots.length]);
+    setSlots([]);
   };
 
   const removeSlot = (index: number) => {
-    setAdditionalSlots(additionalSlots.filter((val, i) => i !== index));
+    setSlots(slots.filter((val, i) => i !== index));
+  };
+
+  const setSlotsValue = (
+    value: { date?: Date; startTime?: string; endTime?: string },
+    index: number
+  ) => {
+    const valueToUpdate = slots.at(index);
+    setSlots(slots.splice(index, 1, { ...valueToUpdate, ...value }));
+    console.log(slots);
   };
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
     if (!open) {
-      setAdditionalSlots([]);
+      setSlots([{}]);
     }
   };
 
@@ -54,8 +70,7 @@ export function ProposeButton() {
       <DialogTrigger asChild>
         <Button
           className="bg-[#3dd7a1] text-black rounded-lg p-6"
-          variant="outline"
-        >
+          variant="outline">
           Propose new session
         </Button>
       </DialogTrigger>
@@ -66,63 +81,57 @@ export function ProposeButton() {
         <div className="flex flex-col gap-y-4 py-4">
           <div className="flex flex-col gap-y-4 ">
             <Label htmlFor="timezone">Timezone</Label>
-            <Select>
+            <Select onValueChange={(value) => setSelectedTimezone(value)}>
               <SelectTrigger className="">
                 <SelectValue placeholder="Please select timezone by city" />
               </SelectTrigger>
               <SelectContent>
-                {timezones.map((timezone) => (
-                  <SelectItem value={timezone.city}>
-                    {' '}
+                {timezones.map((timezone, index) => (
+                  <SelectItem key={index} value={timezone.city}>
                     {`${timezone.city} (${timezone.gmt})`}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-col gap-4">
-            <Label htmlFor="date">Add a date</Label>
-            <DatePickerForm />
-          </div>
-          <div className="flex gap-2">
-            <div className="flex flex-col gap-4">
-              <Input id="startTime" placeholder="start time" value="" />
-            </div>
-            <div className="flex flex-col gap-4">
-              <Input id="endTime" placeholder="end time" readOnly value="" />
-            </div>
-          </div>
           <p className="text-sm text-center">
             Each meeting slot is allocated a duration of 1.5 hours
           </p>
-          {additionalSlots.map((slot, index) => (
-            <div key={slot} className="flex flex-col gap-y-4 py-4">
+
+          {slots.map((slot, index) => (
+            <div key={index} className="flex flex-col gap-y-4 py-4">
               <div className="flex flex-col gap-4">
-                <Label
-                  htmlFor={`date-${slot}`}
-                  className="flex justify-between items-center"
-                >
+                <Label className="flex justify-between items-center">
                   Add a date
-                  <Button onClick={() => removeSlot(index)} className="w-fit">
-                    Remove
-                  </Button>
+                  {index !== 0 && (
+                    <Button onClick={() => removeSlot(index)} className="w-fit">
+                      Remove
+                    </Button>
+                  )}
                 </Label>
-                <DatePickerForm />
+                <DatePickerForm
+                  setDate={(date) => {
+                    setSlotsValue({ date }, index);
+                  }}
+                />
               </div>
-              <div className="flex">
+              <div className="flex gap-2">
                 <div className="flex flex-col gap-4">
-                  <Input
-                    id={`startTime-${slot}`}
-                    placeholder="start time"
-                    value=""
-                  />
+                  <Select onValueChange={() => {}}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Start Time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {times.map((val, idx) => (
+                        <SelectItem key={idx} value={val}>
+                          {val}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <Input
-                    id={`endTime-${slot}`}
-                    placeholder="end time"
-                    value=""
-                  />
+                  <Input placeholder="End Time" readOnly value={slot.endTime} />
                 </div>
               </div>
             </div>

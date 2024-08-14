@@ -13,7 +13,7 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  phone: number;
+  phone: string;
   password: string;
   confirmPass?: string;
 }
@@ -27,7 +27,7 @@ export function TabsDemo({ onTabChange }: TabsDemoProps) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState(0);
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
 
@@ -79,19 +79,16 @@ export function TabsDemo({ onTabChange }: TabsDemoProps) {
     <Tabs
       defaultValue="signup"
       className="w-[400px] "
-      onValueChange={handleTabChange}
-    >
+      onValueChange={handleTabChange}>
       <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger
           value="signup"
-          className="border-b-2 border-solid   data-[state=active]:border-green-500"
-        >
+          className="border-b-2 border-solid   data-[state=active]:border-green-500">
           Signup
         </TabsTrigger>
         <TabsTrigger
           value="login"
-          className="border-b-2 border-solid   data-[state=active]:border-green-500"
-        >
+          className="border-b-2 border-solid   data-[state=active]:border-green-500">
           Login
         </TabsTrigger>
       </TabsList>
@@ -132,7 +129,7 @@ export function TabsDemo({ onTabChange }: TabsDemoProps) {
                 <div className=" mb-4">
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input
-                    onChange={(e) => setPhone(Number(e.target.value))}
+                    onChange={(e) => setPhone(e.target.value)}
                     id="phone"
                     placeholder="Enter your phone number"
                     required
@@ -175,11 +172,13 @@ export function TabsDemo({ onTabChange }: TabsDemoProps) {
           <Card className="flex flex-col justify-center ">
             <CardContent className="m-4">
               <div className="space-y-1">
-                <Label className='' htmlFor="email">Email</Label>
+                <Label className="" htmlFor="email">
+                  Email
+                </Label>
                 <Input
                   onChange={(e) => setLogInEmail(e.target.value)}
                   id="email"
-                  placeholder='john@gmail.com'
+                  placeholder="john@gmail.com"
                   required
                 />
               </div>
@@ -188,7 +187,7 @@ export function TabsDemo({ onTabChange }: TabsDemoProps) {
                 <Input
                   onChange={(e) => setLogInPass(e.target.value)}
                   id="password"
-                  placeholder='enter password'
+                  placeholder="enter password"
                   required
                 />
               </div>
