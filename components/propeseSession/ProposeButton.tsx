@@ -18,8 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import moment from 'moment-timezone';
+import moment, { Moment } from 'moment-timezone';
 import { DatePickerForm } from './DatePickerPropose';
+
+export interface SlotInterface {
+  date?: Date;
+  startTime?: string;
+  endTime?: string;
+}
 
 export function ProposeButton() {
   const timezones = moment.tz.names().map((tz) => {
@@ -35,27 +41,45 @@ export function ProposeButton() {
     times.push(moment().startOf('day').add(i, 'minute').format('HH:mm'));
   }
 
-  const [slots, setSlots] = useState<
-    { date?: Date; startTime?: string; endTime?: string }[]
-  >([{}]);
+  const [slots, setSlots] = useState<SlotInterface[]>([{}]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTimezone, setSelectedTimezone] = useState('');
 
   const addSlot = () => {
-    setSlots([]);
+    setSlots([...slots, {}]);
   };
 
   const removeSlot = (index: number) => {
     setSlots(slots.filter((val, i) => i !== index));
   };
 
-  const setSlotsValue = (
-    value: { date?: Date; startTime?: string; endTime?: string },
-    index: number
-  ) => {
-    const valueToUpdate = slots.at(index);
-    setSlots(slots.splice(index, 1, { ...valueToUpdate, ...value }));
-    console.log(slots);
+  const setSlotsValue = (value: Partial<SlotInterface>, index: number) => {
+    setSlots((prevValue) => {
+      const currVal = prevValue[index];
+      return [...prevValue.toSpliced(index, 1, { ...currVal, ...value })];
+    });
+  };
+
+  const shouldBeDisbaled = (index: number, startTimeValue: string) => {
+    if (index > 0 && slots[index - 1] && slots[index - 1].endTime) {
+      const parsedTime = moment(startTimeValue, 'HH:mm');
+
+      const prevParsedTime = moment(slots[index - 1].endTime, 'HH:mm');
+      let lastSlotEndTime = moment(slots[index - 1].date).set({
+        hour: prevParsedTime.hour(),
+        minute: prevParsedTime.minute(),
+      });
+      if (slots[index - 1].endTime === '00:00') {
+        lastSlotEndTime = lastSlotEndTime.add(1, 'day');
+      }
+      return moment(slots[index].date)
+        .set({
+          hour: parsedTime.hour(),
+          minute: parsedTime.minute(),
+        })
+        .isBefore(lastSlotEndTime);
+    }
+    return false;
   };
 
   const handleOpenChange = (open: boolean) => {
@@ -101,15 +125,18 @@ export function ProposeButton() {
           {slots.map((slot, index) => (
             <div key={index} className="flex flex-col gap-y-4 py-4">
               <div className="flex flex-col gap-4">
-                <Label className="flex justify-between items-center">
-                  Add a date
+                <div className="flex justify-between">
+                  <Label className="flex justify-between items-center">
+                    Add a date
+                  </Label>
                   {index !== 0 && (
                     <Button onClick={() => removeSlot(index)} className="w-fit">
                       Remove
                     </Button>
                   )}
-                </Label>
+                </div>
                 <DatePickerForm
+                  minDate={moment(slots[index - 1]?.date)}
                   setDate={(date) => {
                     setSlotsValue({ date }, index);
                   }}
@@ -117,13 +144,26 @@ export function ProposeButton() {
               </div>
               <div className="flex gap-2">
                 <div className="flex flex-col gap-4">
-                  <Select onValueChange={() => {}}>
+                  <Select
+                    disabled={!slot.date}
+                    onValueChange={(val) => {
+                      const payload = {
+                        startTime: val,
+                        endTime: moment(val, 'HH:mm')
+                          .add(90, 'minutes')
+                          .format('HH:mm'),
+                      };
+                      setSlotsValue(payload, index);
+                    }}>
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Start Time" />
                     </SelectTrigger>
                     <SelectContent>
                       {times.map((val, idx) => (
-                        <SelectItem key={idx} value={val}>
+                        <SelectItem
+                          disabled={shouldBeDisbaled(index, val)}
+                          key={idx}
+                          value={val}>
                           {val}
                         </SelectItem>
                       ))}
@@ -131,7 +171,12 @@ export function ProposeButton() {
                   </Select>
                 </div>
                 <div className="flex flex-col gap-4">
-                  <Input placeholder="End Time" readOnly value={slot.endTime} />
+                  <Input
+                    disabled
+                    placeholder="End Time"
+                    value={slot.endTime || ''}
+                    onChange={() => {}}
+                  />
                 </div>
               </div>
             </div>

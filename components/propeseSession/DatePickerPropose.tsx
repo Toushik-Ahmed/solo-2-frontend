@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/popover';
 import { toast } from '@/components/ui/use-toast';
 import { cn } from '@/lib/utils';
+import moment, { Moment } from 'moment-timezone';
 
 const FormSchema = z.object({
   dob: z.date({
@@ -29,11 +30,16 @@ const FormSchema = z.object({
   }),
 });
 
-export function DatePickerForm({ setDate }: { setDate: (date?: Date) => void }) {
+export function DatePickerForm({
+  setDate,
+  minDate,
+}: {
+  setDate: (date?: Date) => void;
+  minDate?: Moment;
+}) {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-
   function onSubmit(data: z.infer<typeof FormSchema>) {
     toast({
       title: 'You submitted the following values:',
@@ -79,7 +85,7 @@ export function DatePickerForm({ setDate }: { setDate: (date?: Date) => void }) 
                       setDate(args[0]);
                       field.onChange(...args);
                     }}
-                    disabled={(date) => date < new Date()}
+                    disabled={(date) => moment(date).isBefore(minDate, 'day')}
                     initialFocus
                   />
                 </PopoverContent>
