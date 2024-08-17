@@ -27,6 +27,6 @@ export const getCurrentUser = async (): Promise<User> => {
       Authorization: `Bearer ${getToken()}`,
     },
   });
-  console.log(response.data);
+
   return response.data;
 };

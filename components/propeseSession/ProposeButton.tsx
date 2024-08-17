@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import moment, { Moment } from 'moment-timezone';
+import { proposeSlot, ProposeSlots } from '@/services/apiServices';
+import moment from 'moment-timezone';
 import { DatePickerForm } from './DatePickerPropose';
 
 export interface SlotInterface {
@@ -44,6 +45,26 @@ export function ProposeButton() {
   const [slots, setSlots] = useState<SlotInterface[]>([{}]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTimezone, setSelectedTimezone] = useState('');
+  const [proposeData, setProposeData] = useState<ProposeSlots[]>([]);
+
+  const handleSubmit = async () => {
+    const data = {
+      timezone: selectedTimezone,
+      startTime: slots.map((el) => {
+        const parsedStartTime = moment(el.startTime, 'HH:mm');
+        return moment(el.date)
+          .set({
+            hour: parsedStartTime.hour(),
+            minute: parsedStartTime.minute(),
+          })
+          .toISOString();
+      }),
+    };
+    const proposedData = await proposeSlot(data);
+
+    setProposeData((prevData) => [...prevData, proposedData]);
+    console.log(proposeData);
+  };
 
   const addSlot = () => {
     setSlots([...slots, {}]);
@@ -94,7 +115,8 @@ export function ProposeButton() {
       <DialogTrigger asChild>
         <Button
           className="bg-[#3dd7a1] text-black rounded-lg p-6"
-          variant="outline">
+          variant="outline"
+        >
           Propose new session
         </Button>
       </DialogTrigger>
@@ -154,7 +176,8 @@ export function ProposeButton() {
                           .format('HH:mm'),
                       };
                       setSlotsValue(payload, index);
-                    }}>
+                    }}
+                  >
                     <SelectTrigger className="w-[180px]">
                       <SelectValue placeholder="Start Time" />
                     </SelectTrigger>
@@ -163,7 +186,8 @@ export function ProposeButton() {
                         <SelectItem
                           disabled={shouldBeDisbaled(index, val)}
                           key={idx}
-                          value={val}>
+                          value={val}
+                        >
                           {val}
                         </SelectItem>
                       ))}
@@ -184,7 +208,9 @@ export function ProposeButton() {
           <Button onClick={addSlot}>Add another slot</Button>
         </div>
         <DialogFooter>
-          <Button type="submit">Save changes</Button>
+          <Button type="submit" onClick={handleSubmit}>
+            Save changes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
