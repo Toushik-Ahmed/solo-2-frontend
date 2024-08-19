@@ -22,13 +22,17 @@ import { proposeSlot, ProposeSlots } from '@/services/apiServices';
 import moment from 'moment-timezone';
 import { DatePickerForm } from './DatePickerPropose';
 
+interface Props {
+  setProposeData: React.Dispatch<React.SetStateAction<ProposeSlots[]>>;
+}
+
 export interface SlotInterface {
   date?: Date;
   startTime?: string;
   endTime?: string;
 }
 
-export function ProposeButton() {
+export function ProposeButton({ setProposeData }: Props) {
   const timezones = moment.tz.names().map((tz) => {
     const offset = moment.tz(tz).format('Z');
     return {
@@ -45,7 +49,7 @@ export function ProposeButton() {
   const [slots, setSlots] = useState<SlotInterface[]>([{}]);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedTimezone, setSelectedTimezone] = useState('');
-  const [proposeData, setProposeData] = useState<ProposeSlots[]>([]);
+  // const [proposeData, setProposeData] = useState<ProposeSlots[]>([]);
 
   const handleSubmit = async () => {
     const data = {
@@ -62,8 +66,8 @@ export function ProposeButton() {
     };
     const proposedData = await proposeSlot(data);
 
-    setProposeData((prevData) => [...prevData, proposedData]);
-    console.log(proposeData);
+    setProposeData((prevData: ProposeSlots[]) => [...prevData, proposedData]);
+    setIsOpen(false)
   };
 
   const addSlot = () => {

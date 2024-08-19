@@ -1,6 +1,8 @@
 'use client';
 import { Button } from '@/components/ui/button';
+import { getAllProposedSlots, ProposeSlots } from '@/services/apiServices';
 import { getCurrentUser } from '@/services/authServices';
+import moment from 'moment-timezone';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -19,6 +21,26 @@ function Dashboard() {
   const currentPath = usePathname();
   const [currentUser, setCurrentUser] = useState<User>();
   const [proposeButton, setProposeButton] = useState(false);
+  const [proposeData, setProposeData] = useState<ProposeSlots[]>([]);
+  const [getPropossedData, setGetPropossedData] = useState<ProposeSlots[]>([]);
+  const [startTimeArray, setStartTimeArray] = useState<string[]>([]);
+
+  const getAllProposedSession = async () => {
+    try {
+      const result: ProposeSlots[] = await getAllProposedSlots();
+      setGetPropossedData(result);
+
+      setStartTimeArray(result.map((el) => el.startTime).flat());
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDelete = () => {};
+
+  useEffect(() => {
+    getAllProposedSession();
+  }, [proposeData]);
 
   useEffect(() => {
     const currentUserFn = async () => {
@@ -55,7 +77,7 @@ function Dashboard() {
           </li>
           <li className="flex justify-center items-center  hover:bg-[#222726]   p-2 rounded-xl">
             <LuArrowDownUp className="mr-2" />
-            <Link href="#"> My performence </Link>
+            <Link href="#"> My performance </Link>
           </li>
         </ul>
       </nav>
@@ -90,7 +112,7 @@ function Dashboard() {
           </div>
         </div>
       ) : (
-        <div>
+        <div className=" bg-[#1a1c1f] ">
           <div className="text-white m-20 flex flex-col gap-y-20">
             <Link
               onClick={() => setProposeButton(false)}
@@ -103,22 +125,43 @@ function Dashboard() {
           </div>
 
           <div className="w-full flex justify-center">
-            <div className="text-center  flex flex-col gap-8 w-[50%] ">
-              <ProposeButton />
+            <div className="text-centern pb-5 flex flex-col gap-8 w-[50%] ">
+              <ProposeButton setProposeData={setProposeData} />
               <div className="text-white flex justify-between">
-                <p>Availabilities (2)</p>
-                <p>Asia/Dhaka</p>
+                <p>Availabilities ({getPropossedData.length})</p>
+                <p>
+                  {getPropossedData.length > 0
+                    ? getPropossedData[0].timezone
+                    : ''}
+                </p>
               </div>
-              <div className="text-white bg-[#292b2e] rounded-lg flex justify-between p-4 items-center">
-                08:00-09:30 ,August 12, 2024
-                <div className="w-fit  flex  items-center">
-                  <Edit />
-                  <Button className="bg-[[#3f4146]] text-lg" variant="default">
-                    {' '}
-                    <MdDeleteForever className="w-8 h-5" />
-                  </Button>
-                </div>
-              </div>
+
+              {startTimeArray.map((el, index) => {
+                const startTime = moment(el);
+                const endTime = moment(startTime)
+                  .add(1, 'hour')
+                  .add(30, 'minutes');
+                return (
+                  <div
+                    key={index}
+                    className="text-white bg-[#292b2e] rounded-lg flex justify-between p-4 items-center"
+                  >
+                    <div>{`${startTime.format('HH:mm')} - ${endTime.format(
+                      'HH:mm'
+                    )} , ${startTime.format('MMMM DD, YYYY')}`}</div>
+
+                    <div className="w-fit flex items-center">
+                      <Edit />
+                      <Button
+                        className="bg-[[#3f4146]] text-lg"
+                        variant="default"
+                      >
+                        <MdDeleteForever className="w-8 h-5" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -128,5 +171,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
-// bg-[#133328]

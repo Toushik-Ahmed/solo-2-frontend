@@ -24,3 +24,19 @@ export const proposeSlot = async (data: ProposeSlots) => {
     console.log(error);
   }
 };
+//getAllProposeSession
+export const getAllProposedSlots = async () => {
+  try {
+    const response = await axios.get(
+      `${baseUrl}/interviewdashboard/dashboard/getAllProposeSession`,
+      {
+        headers: {
+          Authorization: `Bearer ${getToken()}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
